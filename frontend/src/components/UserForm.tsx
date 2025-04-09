@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   TextField, 
   Button, 
@@ -19,18 +19,27 @@ import {
   InputLabel,
   FormHelperText
 } from '@mui/material';
-import { updateUser, createUser } from '../api/userApi';
+import { updateUser, createUser, fetchUsers, deleteUser } from '../api/userApi';
 import { User } from '../types/user';
 
+// Fetch users data
+const { data: users = [], isLoading, error } = useQuery({
+  queryKey: ['users'], 
+  queryFn: fetchUsers, 
+});
+
+// Define user schema for form validation
 const userSchema = z.object({
-  fullName: z.string().min(1, 'Full name is required').max(100, 'Full name should not exceed 100 characters'),
+  fullName: z.string()
+    .min(1, 'Full name is required')
+    .max(100, 'Full name should not exceed 100 characters'),
   email: z.string().email('Invalid email'),
   phone: z.string().min(1, 'Phone is required'),
   birthDate: z.string().optional(),
   role: z.enum(['admin', 'user']),
   position: z.string()
-    .min(1, 'Position is required') // Минимальная длина строки
-    .max(255, 'Position should not exceed 255 characters') // Максимальная длина строки
+    .min(1, 'Position is required') 
+    .max(255, 'Position should not exceed 255 characters')
     .optional()
     .transform(val => val === '' ? undefined : val),
   isActive: z.boolean(),
@@ -58,20 +67,20 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose, isNew = false
   const queryClient = useQueryClient();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   const { control, handleSubmit } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
-    defaultValues: isNew 
-      ? defaultValues 
+    defaultValues: isNew
+      ? defaultValues
       : {
-        fullName: user?.fullName || '',
-        email: user?.email || '',
-        phone: user?.phone || '',
-        birthDate: user?.birthDate || '',
-        role: user?.role || 'user',
-        position: user?.position || '',
-        isActive: user?.isActive ?? true,
-      },
+          fullName: user?.fullName || '',
+          email: user?.email || '',
+          phone: user?.phone || '',
+          birthDate: user?.birthDate || '',
+          role: user?.role || 'user',
+          position: user?.position || '',
+          isActive: user?.isActive ?? true,
+        },
   });
 
   const createMutation = useMutation({
@@ -96,10 +105,8 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose, isNew = false
 
   const onSubmit: SubmitHandler<UserFormData> = (data) => {
     if (isNew) {
-      console.log('Creating user:', data);
       createMutation.mutate(data);
     } else {
-      console.log('Updating user:', user?.id, data);
       updateMutation.mutate(data);
     }
   };
@@ -108,84 +115,89 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose, isNew = false
 
   return (
     <Container maxWidth="sm" disableGutters={isMobile}>
-      <Box 
-        component="form" 
-        onSubmit={handleSubmit(onSubmit)} 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
+      <Box
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
           gap: 2,
           width: '100%',
-          padding: isMobile ? 1 : 2 
+          padding: isMobile ? 1 : 2,
         }}
       >
+        {/* Full Name */}
         <Controller
           name="fullName"
           control={control}
           render={({ field, fieldState }) => (
-            <TextField 
-              label="Full Name" 
-              {...field} 
-              error={!!fieldState.error} 
+            <TextField
+              label="Full Name"
+              {...field}
+              error={!!fieldState.error}
               helperText={fieldState.error?.message}
               fullWidth
-              size={isMobile ? "small" : "medium"}
+              size={isMobile ? 'small' : 'medium'}
             />
           )}
         />
+
+        {/* Email */}
         <Controller
           name="email"
           control={control}
           render={({ field, fieldState }) => (
-            <TextField 
-              label="Email" 
-              {...field} 
-              error={!!fieldState.error} 
+            <TextField
+              label="Email"
+              {...field}
+              error={!!fieldState.error}
               helperText={fieldState.error?.message}
               fullWidth
-              size={isMobile ? "small" : "medium"}
+              size={isMobile ? 'small' : 'medium'}
             />
           )}
         />
+
+        {/* Phone */}
         <Controller
           name="phone"
           control={control}
           render={({ field, fieldState }) => (
-            <TextField 
-              label="Phone" 
-              {...field} 
-              error={!!fieldState.error} 
+            <TextField
+              label="Phone"
+              {...field}
+              error={!!fieldState.error}
               helperText={fieldState.error?.message}
               fullWidth
-              size={isMobile ? "small" : "medium"}
+              size={isMobile ? 'small' : 'medium'}
             />
           )}
         />
+
+        {/* Birth Date */}
         <Controller
           name="birthDate"
           control={control}
           render={({ field }) => (
-            <TextField 
-              type="date" 
-              label="Birth Date" 
-              {...field} 
+            <TextField
+              type="date"
+              label="Birth Date"
+              {...field}
               InputLabelProps={{ shrink: true }}
               fullWidth
-              size={isMobile ? "small" : "medium"}
+              size={isMobile ? 'small' : 'medium'}
             />
           )}
         />
+
+        {/* Role */}
         <Controller
           name="role"
           control={control}
           render={({ field, fieldState }) => (
-            <FormControl fullWidth error={!!fieldState.error} size={isMobile ? "small" : "medium"}>
+            <FormControl fullWidth error={!!fieldState.error} size={isMobile ? 'small' : 'medium'}>
               <InputLabel id="role-label">Role</InputLabel>
-              <Select 
-                {...field} 
-                labelId="role-label"
-                label="Role"
-              >
+              <Select {...field} labelId="role-label" label="Role">
                 <MenuItem value="admin">Administrator</MenuItem>
                 <MenuItem value="user">User</MenuItem>
               </Select>
@@ -193,49 +205,57 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose, isNew = false
             </FormControl>
           )}
         />
+
+        {/* Position */}
         <Controller
           name="position"
           control={control}
           render={({ field, fieldState }) => (
-            <TextField 
-              label="Position" 
-              {...field} 
-              error={!!fieldState.error} 
-              helperText={fieldState.error?.message} 
+            <TextField
+              label="Position"
+              {...field}
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message}
               inputProps={{ maxLength: 255 }}
               fullWidth
-              size={isMobile ? "small" : "medium"}
+              size={isMobile ? 'small' : 'medium'}
             />
           )}
         />
+
+        {/* Is Active */}
         <Controller
           name="isActive"
           control={control}
           render={({ field }) => (
-            <FormControlLabel 
-              control={<Checkbox {...field} checked={field.value} />} 
-              label="Active" 
+            <FormControlLabel
+              control={<Checkbox {...field} checked={field.value} />}
+              label="Active"
             />
           )}
         />
-        <Box sx={{ 
-          display: 'flex', 
-          gap: 2,
-          justifyContent: isMobile ? 'center' : 'flex-end', 
-          flexDirection: isMobile ? 'column' : 'row',
-          mt: 1
-        }}>
-          <Button 
-            type="submit" 
-            variant="contained" 
+
+        {/* Buttons */}
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            justifyContent: isMobile ? 'center' : 'flex-end',
+            flexDirection: isMobile ? 'column' : 'row',
+            mt: 1,
+          }}
+        >
+          <Button
+            type="submit"
+            variant="contained"
             fullWidth={isMobile}
             disabled={isPending}
             startIcon={isPending ? <CircularProgress size={20} color="inherit" /> : null}
           >
-            {isPending ? 'Saving...' : (isNew ? 'Create' : 'Save')}
+            {isPending ? 'Saving...' : isNew ? 'Create' : 'Save'}
           </Button>
-          <Button 
-            onClick={onClose} 
+          <Button
+            onClick={onClose}
             variant="outlined"
             fullWidth={isMobile}
             disabled={isPending}
