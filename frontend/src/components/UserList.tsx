@@ -1,16 +1,39 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, TableBody, TableCell, TableHead, TableRow, Button, CircularProgress, Box, Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableRow, 
+  Button, 
+  CircularProgress, 
+  Box, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent,
+  TableSortLabel,
+  IconButton,
+  TextField,
+  InputAdornment
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { fetchUsers, deleteUser } from '../api/userApi';
 import { UserForm } from './UserForm';
 import { DeleteDialog } from './DeleteDialog';
 import { User } from '../types/user';
+
+type SortField = 'fullName' | 'email' | 'phone' | 'role';
+type SortDirection = 'asc' | 'desc';
 
 export const UserList: React.FC = () => {
   const queryClient = useQueryClient();
   const [editUser, setEditUser] = useState<User | undefined>(undefined);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [sortField, setSortField] = useState<SortField>('fullName');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Типизация useQuery
   const { data: users = [], isLoading, error } = useQuery({
@@ -48,12 +71,57 @@ export const UserList: React.FC = () => {
     setEditUser(undefined);
   };
 
+  const handleRequestSort = (field: SortField) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
+
+  const sortedUsers = React.useMemo(() => {
+    // Сначала фильтруем по поисковому запросу
+    const filteredUsers = searchQuery
+      ? users.filter(user => 
+          user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.phone.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : users;
+      
+    // Затем сортируем
+    return [...filteredUsers].sort((a, b) => {
+      const compareA = a[sortField];
+      const compareB = b[sortField];
+      
+      if (compareA < compareB) {
+        return sortDirection === 'asc' ? -1 : 1;
+      }
+      if (compareA > compareB) {
+        return sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [users, sortField, sortDirection, searchQuery]);
+
   if (isLoading) return <CircularProgress />;
   if (error) return <div>Ошибка загрузки данных</div>;
 
   return (
     <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
+        <TextField
+          label="Поиск"
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
         <Button variant="contained" color="primary" onClick={handleAddUser}>
           Добавить пользователя
         </Button>
@@ -62,15 +130,47 @@ export const UserList: React.FC = () => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>ФИО</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Телефон</TableCell>
-            <TableCell>Роль</TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortField === 'fullName'}
+                direction={sortField === 'fullName' ? sortDirection : 'asc'}
+                onClick={() => handleRequestSort('fullName')}
+              >
+                ФИО
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortField === 'email'}
+                direction={sortField === 'email' ? sortDirection : 'asc'}
+                onClick={() => handleRequestSort('email')}
+              >
+                Email
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortField === 'phone'}
+                direction={sortField === 'phone' ? sortDirection : 'asc'}
+                onClick={() => handleRequestSort('phone')}
+              >
+                Телефон
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortField === 'role'}
+                direction={sortField === 'role' ? sortDirection : 'asc'}
+                onClick={() => handleRequestSort('role')}
+              >
+                Роль
+              </TableSortLabel>
+            </TableCell>
             <TableCell>Действия</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {users.map((user) => (
+          {sortedUsers.map((user) => (
             <TableRow key={user.id}>
               <TableCell>{user.fullName}</TableCell>
               <TableCell>{user.email}</TableCell>
