@@ -8,11 +8,6 @@ export const fetchUsers = async (): Promise<User[]> => {
   return data;
 };
 
-export const createUser = async (user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> => {
-  const { data } = await axios.post(API_URL, user);
-  return data;
-};
-
 export const updateUser = async (id: number, user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> => {
   const { data } = await axios.put(`${API_URL}/${id}`, user);
   return data;

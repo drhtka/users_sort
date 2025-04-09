@@ -13,12 +13,22 @@ import {
   DialogTitle, 
   DialogContent,
   TableSortLabel,
-  IconButton,
   TextField,
   InputAdornment,
-  TablePagination
+  TablePagination,
+  useTheme,
+  useMediaQuery,
+  Paper,
+  Typography,
+  Container,
+  Card,
+  CardContent,
+  IconButton,
+  Stack
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { fetchUsers, deleteUser } from '../api/userApi';
 import { UserForm } from './UserForm';
 import { DeleteDialog } from './DeleteDialog';
@@ -35,16 +45,20 @@ export const UserList: React.FC = () => {
   const [sortField, setSortField] = useState<SortField>('fullName');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Состояние для пагинации
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
+  // Query hook typing
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['users'],
     queryFn: fetchUsers
   });
 
+  // Mutation hook typing
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
@@ -57,11 +71,6 @@ export const UserList: React.FC = () => {
       deleteMutation.mutate(deleteId);
       setDeleteId(null);
     }
-  };
-
-  const handleAddUser = () => {
-    setEditUser(undefined);
-    setIsFormOpen(true);
   };
 
   const handleEditUser = (user: User) => {
@@ -90,18 +99,10 @@ export const UserList: React.FC = () => {
   };
 
   const sortedUsers = React.useMemo(() => {
-    const filteredUsers = searchQuery
-      ? users.filter(user => 
-          user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.phone.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : users;
-
-    return [...filteredUsers].sort((a, b) => {
+    return [...users].sort((a, b) => {
       const compareA = a[sortField];
       const compareB = b[sortField];
-      
+
       if (compareA < compareB) {
         return sortDirection === 'asc' ? -1 : 1;
       }
@@ -110,7 +111,7 @@ export const UserList: React.FC = () => {
       }
       return 0;
     });
-  }, [users, sortField, sortDirection, searchQuery]);
+  }, [users, sortField, sortDirection]);
 
   const paginatedUsers = React.useMemo(() => {
     const startIndex = page * rowsPerPage;
@@ -118,32 +119,45 @@ export const UserList: React.FC = () => {
     return sortedUsers.slice(startIndex, endIndex);
   }, [sortedUsers, page, rowsPerPage]);
 
-  if (isLoading) return <CircularProgress />;
-  if (error) return <div>Ошибка загрузки данных</div>;
+  if (isLoading) return <Box display="flex" justifyContent="center" padding={4}><CircularProgress /></Box>;
+  if (error) return <Box p={2}><Typography color="error">Error loading data</Typography></Box>;
 
-  return (
-    <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
-        <TextField
-          label="Поиск"
-          variant="outlined"
-          size="small"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Button variant="contained" color="primary" onClick={handleAddUser}>
-          Добавить пользователя
-        </Button>
-      </Box>
+  // Mobile view with cards
+  const mobileView = (
+    <Stack spacing={2}>
+      {paginatedUsers.map((user) => (
+        <Card key={user.id} variant="outlined">
+          <CardContent>
+            <Typography variant="h6" component="div" gutterBottom>
+              {user.fullName}
+            </Typography>
+            <Typography color="text.secondary" gutterBottom>
+              {user.email}
+            </Typography>
+            <Typography color="text.secondary" gutterBottom>
+              {user.phone}
+            </Typography>
+            <Typography color="text.secondary" gutterBottom>
+              {user.role === 'admin' ? 'Administrator' : 'User'}
+            </Typography>
+            <Box mt={1} display="flex" justifyContent="flex-end" gap={1}>
+              <IconButton onClick={() => handleEditUser(user)} color="primary" size="small">
+                <EditIcon />
+              </IconButton>
+              <IconButton onClick={() => setDeleteId(user.id)} color="error" size="small">
+                <DeleteIcon />
+              </IconButton>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
+    </Stack>
+  );
 
-      <Table>
+  // Desktop view with table
+  const desktopView = (
+    <Paper>
+      <Table size={isTablet ? "small" : "medium"}>
         <TableHead>
           <TableRow>
             <TableCell>
@@ -152,7 +166,7 @@ export const UserList: React.FC = () => {
                 direction={sortField === 'fullName' ? sortDirection : 'asc'}
                 onClick={() => handleRequestSort('fullName')}
               >
-                ФИО
+                Full Name
               </TableSortLabel>
             </TableCell>
             <TableCell>
@@ -164,25 +178,27 @@ export const UserList: React.FC = () => {
                 Email
               </TableSortLabel>
             </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={sortField === 'phone'}
-                direction={sortField === 'phone' ? sortDirection : 'asc'}
-                onClick={() => handleRequestSort('phone')}
-              >
-                Телефон
-              </TableSortLabel>
-            </TableCell>
+            {!isTablet && (
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'phone'}
+                  direction={sortField === 'phone' ? sortDirection : 'asc'}
+                  onClick={() => handleRequestSort('phone')}
+                >
+                  Phone
+                </TableSortLabel>
+              </TableCell>
+            )}
             <TableCell>
               <TableSortLabel
                 active={sortField === 'role'}
                 direction={sortField === 'role' ? sortDirection : 'asc'}
                 onClick={() => handleRequestSort('role')}
               >
-                Роль
+                Role
               </TableSortLabel>
             </TableCell>
-            <TableCell>Действия</TableCell>
+            <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -190,39 +206,71 @@ export const UserList: React.FC = () => {
             <TableRow key={user.id}>
               <TableCell>{user.fullName}</TableCell>
               <TableCell>{user.email}</TableCell>
-              <TableCell>{user.phone}</TableCell>
-              <TableCell>{user.role === 'admin' ? 'Администратор' : 'Пользователь'}</TableCell>
+              {!isTablet && <TableCell>{user.phone}</TableCell>}
+              <TableCell>{user.role === 'admin' ? 'Administrator' : 'User'}</TableCell>
               <TableCell>
-                <Button onClick={() => handleEditUser(user)}>Редактировать</Button>
-                <Button onClick={() => setDeleteId(user.id)} color="error">Удалить</Button>
+                <IconButton onClick={() => handleEditUser(user)} color="primary" size="small">
+                  <EditIcon />
+                </IconButton>
+                <IconButton onClick={() => setDeleteId(user.id)} color="error" size="small">
+                  <DeleteIcon />
+                </IconButton>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+    </Paper>
+  );
 
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={sortedUsers.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+  return (
+    <Container maxWidth="lg">
+      <Box sx={{ p: isMobile ? 1 : 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            mb: 2,
+            alignItems: 'center',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? 2 : 0,
+          }}
+        />
+        {isMobile ? mobileView : desktopView}
 
-      <Dialog open={isFormOpen} onClose={handleCloseForm} maxWidth="sm" fullWidth>
-        <DialogTitle>{editUser ? 'Редактировать пользователя' : 'Добавить пользователя'}</DialogTitle>
-        <DialogContent>
-          <UserForm user={editUser} onClose={handleCloseForm} />
-        </DialogContent>
-      </Dialog>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={sortedUsers.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage={isMobile ? '' : 'Rows per page:'}
+        />
 
-      <DeleteDialog
-        open={!!deleteId}
-        onClose={() => setDeleteId(null)}
-        onConfirm={handleDelete}
-      />
-    </Box>
+        {editUser && (
+          <Dialog 
+            open={isFormOpen} 
+            onClose={handleCloseForm}
+            maxWidth="sm" 
+            fullWidth
+            fullScreen={isMobile}
+            disableEscapeKeyDown={true}
+          >
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogContent>
+              <UserForm user={editUser} onClose={handleCloseForm} />
+            </DialogContent>
+          </Dialog>
+        )}
+
+        <DeleteDialog
+          open={!!deleteId}
+          onClose={() => setDeleteId(null)}
+          onConfirm={handleDelete}
+        />
+      </Box>
+    </Container>
   );
 };
