@@ -65,7 +65,7 @@ npm install
 
 ### Running the Application
 
-#### Method 1: Running Separately
+#### Running Separately
 
 1. Start the backend:
 
@@ -78,28 +78,7 @@ npm run json-server
 
 ```bash
 cd frontend
-npm start
-```
 
-#### Method 2: Using Concurrently (requires additional packages)
-
-```bash
-# Install concurrently
-npm install -g concurrently
-
-# Start both frontend and backend
-concurrently "cd backend && npm run json-server" "cd frontend && npm start"
-```
-
-#### Method 3: Using Root Package Scripts
-
-After installing dependencies:
-
-```bash
-# Install dependencies for both frontend and backend
-npm run install:all
-
-# Start both frontend and backend
 npm start
 ```
 
