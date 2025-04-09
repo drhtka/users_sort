@@ -15,7 +15,8 @@ import {
   TableSortLabel,
   IconButton,
   TextField,
-  InputAdornment
+  InputAdornment,
+  TablePagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { fetchUsers, deleteUser } from '../api/userApi';
@@ -35,13 +36,15 @@ export const UserList: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Типизация useQuery
+  // Состояние для пагинации
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['users'],
     queryFn: fetchUsers
   });
 
-  // Типизация useMutation
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
@@ -77,8 +80,16 @@ export const UserList: React.FC = () => {
     setSortField(field);
   };
 
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   const sortedUsers = React.useMemo(() => {
-    // Сначала фильтруем по поисковому запросу
     const filteredUsers = searchQuery
       ? users.filter(user => 
           user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -86,8 +97,7 @@ export const UserList: React.FC = () => {
           user.phone.toLowerCase().includes(searchQuery.toLowerCase())
         )
       : users;
-      
-    // Затем сортируем
+
     return [...filteredUsers].sort((a, b) => {
       const compareA = a[sortField];
       const compareB = b[sortField];
@@ -101,6 +111,12 @@ export const UserList: React.FC = () => {
       return 0;
     });
   }, [users, sortField, sortDirection, searchQuery]);
+
+  const paginatedUsers = React.useMemo(() => {
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return sortedUsers.slice(startIndex, endIndex);
+  }, [sortedUsers, page, rowsPerPage]);
 
   if (isLoading) return <CircularProgress />;
   if (error) return <div>Ошибка загрузки данных</div>;
@@ -170,7 +186,7 @@ export const UserList: React.FC = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortedUsers.map((user) => (
+          {paginatedUsers.map((user) => (
             <TableRow key={user.id}>
               <TableCell>{user.fullName}</TableCell>
               <TableCell>{user.email}</TableCell>
@@ -184,6 +200,16 @@ export const UserList: React.FC = () => {
           ))}
         </TableBody>
       </Table>
+
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={sortedUsers.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
 
       <Dialog open={isFormOpen} onClose={handleCloseForm} maxWidth="sm" fullWidth>
         <DialogTitle>{editUser ? 'Редактировать пользователя' : 'Добавить пользователя'}</DialogTitle>
