@@ -48,8 +48,8 @@ Web application for managing users with features for viewing, adding, editing, a
 
 ### Requirements
 
--   Node.js (v14 or higher)
--   npm (v6 or higher)
+-   Node.js (v20.18.0 or higher)
+-   npm (v10.9.1 or higher)
 
 ### Installing Dependencies
 
