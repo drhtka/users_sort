@@ -14,9 +14,12 @@ import {
   Container,
   useMediaQuery,
   useTheme,
-  CircularProgress
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  FormHelperText
 } from '@mui/material';
-import { updateUser } from '../api/userApi';
+import { updateUser, createUser } from '../api/userApi';
 import { User } from '../types/user';
 
 const userSchema = z.object({
@@ -35,40 +38,72 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 interface UserFormProps {
-  user: User;
+  user?: User;
   onClose: () => void;
+  isNew?: boolean;
 }
 
-export const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
+const defaultValues: UserFormData = {
+  fullName: '',
+  email: '',
+  phone: '',
+  birthDate: '',
+  role: 'user',
+  position: '',
+  isActive: true,
+};
+
+export const UserForm: React.FC<UserFormProps> = ({ user, onClose, isNew = false }) => {
   const queryClient = useQueryClient();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const { control, handleSubmit } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
-    defaultValues: {
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      birthDate: user.birthDate || '',
-      role: user.role,
-      position: user.position || '',
-      isActive: user.isActive,
+    defaultValues: isNew 
+      ? defaultValues 
+      : {
+        fullName: user?.fullName || '',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        birthDate: user?.birthDate || '',
+        role: user?.role || 'user',
+        position: user?.position || '',
+        isActive: user?.isActive ?? true,
+      },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: UserFormData) => createUser(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setTimeout(() => {
+        onClose();
+      }, 100);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: UserFormData) => updateUser(user.id, data),
+    mutationFn: (data: UserFormData) => updateUser(user?.id || 0, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 100);
     },
   });
 
   const onSubmit: SubmitHandler<UserFormData> = (data) => {
-    console.log('Updating user:', user.id, data);
-    updateMutation.mutate(data);
+    if (isNew) {
+      console.log('Creating user:', data);
+      createMutation.mutate(data);
+    } else {
+      console.log('Updating user:', user?.id, data);
+      updateMutation.mutate(data);
+    }
   };
+
+  const isPending = isNew ? createMutation.isPending : updateMutation.isPending;
 
   return (
     <Container maxWidth="sm" disableGutters={isMobile}>
@@ -142,16 +177,19 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
         <Controller
           name="role"
           control={control}
-          render={({ field }) => (
-            <Select 
-              {...field} 
-              label="Role"
-              fullWidth
-              size={isMobile ? "small" : "medium"}
-            >
-              <MenuItem value="admin">Administrator</MenuItem>
-              <MenuItem value="user">User</MenuItem>
-            </Select>
+          render={({ field, fieldState }) => (
+            <FormControl fullWidth error={!!fieldState.error} size={isMobile ? "small" : "medium"}>
+              <InputLabel id="role-label">Role</InputLabel>
+              <Select 
+                {...field} 
+                labelId="role-label"
+                label="Role"
+              >
+                <MenuItem value="admin">Administrator</MenuItem>
+                <MenuItem value="user">User</MenuItem>
+              </Select>
+              {fieldState.error && <FormHelperText>{fieldState.error.message}</FormHelperText>}
+            </FormControl>
           )}
         />
         <Controller
@@ -190,16 +228,16 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
             type="submit" 
             variant="contained" 
             fullWidth={isMobile}
-            disabled={updateMutation.isPending}
-            startIcon={updateMutation.isPending ? <CircularProgress size={20} color="inherit" /> : null}
+            disabled={isPending}
+            startIcon={isPending ? <CircularProgress size={20} color="inherit" /> : null}
           >
-            {updateMutation.isPending ? 'Saving...' : 'Save'}
+            {isPending ? 'Saving...' : (isNew ? 'Create' : 'Save')}
           </Button>
           <Button 
             onClick={onClose} 
             variant="outlined"
             fullWidth={isMobile}
-            disabled={updateMutation.isPending}
+            disabled={isPending}
           >
             Cancel
           </Button>

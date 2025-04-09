@@ -9,9 +9,26 @@ const middlewares = jsonServer.defaults();
 // Настройка CORS для доступа с фронтенда
 server.use(cors());
 
+// Обязательно добавляем парсинг JSON тела запроса
+server.use(jsonServer.bodyParser);
+
+// Middleware для добавления полей createdAt и updatedAt
+server.use((req, res, next) => {
+  if (req.method === 'POST') {
+    req.body.createdAt = new Date().toISOString();
+    req.body.updatedAt = new Date().toISOString();
+  }
+  
+  if (req.method === 'PUT') {
+    req.body.updatedAt = new Date().toISOString();
+  }
+  
+  next();
+});
+
 // Логирование запросов
 server.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
+  console.log(`${req.method} ${req.path}`, req.body || '');
   next();
 });
 

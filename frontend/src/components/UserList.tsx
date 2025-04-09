@@ -29,6 +29,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import { fetchUsers, deleteUser } from '../api/userApi';
 import { UserForm } from './UserForm';
 import { DeleteDialog } from './DeleteDialog';
@@ -42,6 +43,7 @@ export const UserList: React.FC = () => {
   const [editUser, setEditUser] = useState<User | undefined>(undefined);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
   const [sortField, setSortField] = useState<SortField>('fullName');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,12 +77,22 @@ export const UserList: React.FC = () => {
 
   const handleEditUser = (user: User) => {
     setEditUser(user);
+    setIsNewUser(false);
+    setIsFormOpen(true);
+  };
+
+  const handleAddUser = () => {
+    setEditUser(undefined);
+    setIsNewUser(true);
     setIsFormOpen(true);
   };
 
   const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setEditUser(undefined);
+    setTimeout(() => {
+      setIsFormOpen(false);
+      setEditUser(undefined);
+      setIsNewUser(false);
+    }, 100);
   };
 
   const handleRequestSort = (field: SortField) => {
@@ -235,7 +247,17 @@ export const UserList: React.FC = () => {
             flexDirection: isMobile ? 'column' : 'row',
             gap: isMobile ? 2 : 0,
           }}
-        />
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={handleAddUser}
+            fullWidth={isMobile}
+          >
+            Add User
+          </Button>
+        </Box>
         {isMobile ? mobileView : desktopView}
 
         <TablePagination
@@ -249,21 +271,23 @@ export const UserList: React.FC = () => {
           labelRowsPerPage={isMobile ? '' : 'Rows per page:'}
         />
 
-        {editUser && (
-          <Dialog 
-            open={isFormOpen} 
-            onClose={handleCloseForm}
-            maxWidth="sm" 
-            fullWidth
-            fullScreen={isMobile}
-            disableEscapeKeyDown={true}
-          >
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogContent>
-              <UserForm user={editUser} onClose={handleCloseForm} />
-            </DialogContent>
-          </Dialog>
-        )}
+        <Dialog 
+          open={isFormOpen} 
+          onClose={handleCloseForm}
+          maxWidth="sm" 
+          fullWidth
+          fullScreen={isMobile}
+          disableEscapeKeyDown={true}
+        >
+          <DialogTitle>{isNewUser ? 'Add New User' : 'Edit User'}</DialogTitle>
+          <DialogContent>
+            <UserForm 
+              user={editUser} 
+              onClose={handleCloseForm} 
+              isNew={isNewUser}
+            />
+          </DialogContent>
+        </Dialog>
 
         <DeleteDialog
           open={!!deleteId}
