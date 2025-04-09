@@ -1,10 +1,17 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors'); // Добавляем cors
 const sequelize = require('./db/database');
 const userRoutes = require('./routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+app.use(cors({
+  origin: 'http://localhost:3000', // Разрешаем запросы только с фронтенда
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Разрешённые методы
+  allowedHeaders: ['Content-Type'], // Разрешённые заголовки
+}));
 
 app.use(express.json());
 app.use('/api/users', userRoutes);
