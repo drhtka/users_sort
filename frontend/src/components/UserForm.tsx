@@ -28,7 +28,15 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
   const queryClient = useQueryClient();
   const { control, handleSubmit, reset } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
-    defaultValues: user || {
+    defaultValues: user ? {
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      birthDate: user.birthDate || '',
+      role: user.role,
+      position: user.position || '',
+      isActive: user.isActive,
+    } : {
       fullName: '',
       email: '',
       phone: '',
@@ -57,9 +65,12 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose }) => {
   });
 
   const onSubmit: SubmitHandler<UserFormData> = (data) => {
+    console.log('Submitting form with data:', data);
     if (user) {
+      console.log('Updating user:', user.id, data);
       updateMutation.mutate(data);
     } else {
+      console.log('Creating new user:', data);
       createMutation.mutate(data);
     }
   };
