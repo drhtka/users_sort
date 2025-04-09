@@ -1,33 +1,31 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors'); // Добавляем cors
-const sequelize = require('./db/database');
-const userRoutes = require('./routes/users');
+const jsonServer = require('json-server');
+const cors = require('cors');
+const path = require('path');
 
-const app = express();
-const PORT = process.env.PORT || 5001;
+const server = jsonServer.create();
+const router = jsonServer.router(path.join(__dirname, '../db.json'));
+const middlewares = jsonServer.defaults();
 
-app.use(cors({
-  origin: 'http://localhost:3000', // Разрешаем запросы только с фронтенда
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Разрешённые методы
-  allowedHeaders: ['Content-Type'], // Разрешённые заголовки
-}));
+// Настройка CORS для доступа с фронтенда
+server.use(cors());
 
-app.use(express.json());
-app.use('/api/users', userRoutes);
-
-sequelize.sync({ force: true }).then(() => {
-  console.log('База данных синхронизирована');
-  app.listen(PORT, () => {
-    console.log(`Сервер запущен на порту ${PORT}`);
-  });
-}).catch((err) => {
-  console.error('Ошибка подключения к базе данных:', err);
-  process.exit(1); // Явно завершаем процесс при ошибке
+// Логирование запросов
+server.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
 });
 
-// Добавляем обработчик ошибок
-app.use((err, req, res, next) => {
-  console.error('Ошибка в приложении:', err);
+// Используем middleware и router без префикса
+server.use(middlewares);
+server.use(router);
+
+// Обработка ошибок
+server.use((err, req, res, next) => {
+  console.error(err.stack);
   res.status(500).json({ error: 'Внутренняя ошибка сервера' });
 });
+
+const PORT = process.env.PORT || 5001;
+server.listen(PORT, () => {
+  console.log(`JSON Server запущен на порту ${PORT}`);
+}); 

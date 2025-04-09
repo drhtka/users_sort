@@ -1,15 +1,10 @@
 import axios from 'axios';
 import { User } from '../types/user';
 
-const API_URL = 'http://localhost:5001/api/users';
+const API_URL = 'http://localhost:5001/users';
 
 export const fetchUsers = async (): Promise<User[]> => {
   const { data } = await axios.get(API_URL);
-  return data;
-};
-
-export const createUser = async (user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> => {
-  const { data } = await axios.post(API_URL, user);
   return data;
 };
 

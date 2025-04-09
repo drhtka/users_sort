@@ -1,0 +1,204 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "fullName": "Jan Kowalski",
+      "email": "jan@example.com",
+      "phone": "+48 123 456 789",
+      "birthDate": "1990-01-01",
+      "role": "admin",
+      "position": "Manager",
+      "isActive": true
+    },
+    {
+      "id": "2",
+      "fullName": "Maria Rossi",
+      "email": "maria@example.com",
+      "phone": "+39 987 654 321",
+      "birthDate": "1985-05-15",
+      "role": "user",
+      "position": "Analyst",
+      "isActive": true
+    },
+    {
+      "fullName": "Alexander Müllerп",
+      "email": "alex@example.com",
+      "phone": "+49 912 345 678",
+      "birthDate": "1988-03-12",
+      "role": "admin",
+      "position": "Developer",
+      "isActive": true,
+      "id": "3"
+    },
+    {
+      "id": "4",
+      "fullName": "Elena García",
+      "email": "elena@example.com",
+      "phone": "+34 923 456 789",
+      "birthDate": "1992-07-20",
+      "role": "user",
+      "position": "Designer",
+      "isActive": true
+    },
+    {
+      "id": "5",
+      "fullName": "Dmitri Dupont",
+      "email": "dmitry@example.com",
+      "phone": "+33 934 567 890",
+      "birthDate": "1983-11-05",
+      "role": "user",
+      "position": "Tester",
+      "isActive": true
+    },
+    {
+      "id": "6",
+      "fullName": "Olga Svensson",
+      "email": "olga@example.com",
+      "phone": "+46 945 678 901",
+      "birthDate": "1995-09-15",
+      "role": "admin",
+      "position": "Administrator",
+      "isActive": true
+    },
+    {
+      "id": "7",
+      "fullName": "Pavel Novak",
+      "email": "pavel@example.com",
+      "phone": "+420 956 789 012",
+      "birthDate": "1987-02-28",
+      "role": "user",
+      "position": "Marketer",
+      "isActive": true
+    },
+    {
+      "id": "8",
+      "fullName": "Anna Jensen",
+      "email": "anna@example.com",
+      "phone": "+45 967 890 123",
+      "birthDate": "1991-04-10",
+      "role": "user",
+      "position": "Accountant",
+      "isActive": true
+    },
+    {
+      "fullName": "Sergio Conti",
+      "email": "Dolinskyi@ukr.net",
+      "phone": "+39 978 901 234",
+      "birthDate": "1989-06-25",
+      "role": "admin",
+      "position": "System Administrator",
+      "isActive": true,
+      "id": "9"
+    },
+    {
+      "id": "10",
+      "fullName": "Natalie Fischer",
+      "email": "natalia@example.com",
+      "phone": "+49 989 012 345",
+      "birthDate": "1993-08-30",
+      "role": "user",
+      "position": "HR Manager",
+      "isActive": true
+    },
+    {
+      "id": "11",
+      "fullName": "Alexei Leclerc",
+      "email": "alexey@example.com",
+      "phone": "+33 990 123 456",
+      "birthDate": "1984-12-01",
+      "role": "admin",
+      "position": "Project Manager",
+      "isActive": true
+    },
+    {
+      "id": "13",
+      "fullName": "Michael Weber",
+      "email": "mikhail@example.com",
+      "phone": "+43 912 345 678",
+      "birthDate": "1986-10-22",
+      "role": "admin",
+      "position": "Technical Director",
+      "isActive": true
+    },
+    {
+      "id": "14",
+      "fullName": "Julia Silva",
+      "email": "julia@example.com",
+      "phone": "+34 923 456 789",
+      "birthDate": "1994-05-07",
+      "role": "user",
+      "position": "Product Manager",
+      "isActive": true
+    },
+    {
+      "id": "15",
+      "fullName": "Vladimir Bakker",
+      "email": "vladimir@example.com",
+      "phone": "+31 934 567 890",
+      "birthDate": "1982-09-14",
+      "role": "user",
+      "position": "Engineer",
+      "isActive": true
+    },
+    {
+      "id": "16",
+      "fullName": "Katarina Petrović",
+      "email": "ekaterina@example.com",
+      "phone": "+381 945 678 901",
+      "birthDate": "1997-11-03",
+      "role": "admin",
+      "position": "Operations Director",
+      "isActive": true
+    },
+    {
+      "fullName": "Artem Hansen",
+      "email": "artem@example.com",
+      "phone": "+47 956 789 012",
+      "birthDate": "1988-07-19",
+      "role": "user",
+      "position": "Sales Specialist",
+      "isActive": true,
+      "id": "17"
+    },
+    {
+      "id": "18",
+      "fullName": "Oxana Varga",
+      "email": "oksana@example.com",
+      "phone": "+36 967 890 123",
+      "birthDate": "1990-02-14",
+      "role": "user",
+      "position": "Lawyer",
+      "isActive": true
+    },
+    {
+      "id": "19",
+      "fullName": "Nikolai Schmidt",
+      "email": "nikolay@example.com",
+      "phone": "+49 978 901 234",
+      "birthDate": "1987-08-09",
+      "role": "admin",
+      "position": "Financial Analyst",
+      "isActive": true
+    },
+    {
+      "id": "21",
+      "fullName": "Roman Bauer",
+      "email": "roman@example.com",
+      "phone": "+41 990 123 456",
+      "birthDate": "1983-04-17",
+      "role": "admin",
+      "position": "Development Director",
+      "isActive": true
+    },
+    {
+      "id": "22",
+      "fullName": "Alina Moretti",
+      "email": "alina@example.com",
+      "phone": "+39 901 234 567",
+      "birth Galveston": "1998-06-30",
+      "role": "user",
+      "position": "Coordinator",
+      "isActive": true
+    }
+  ]
+}
