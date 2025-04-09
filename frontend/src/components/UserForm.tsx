@@ -29,7 +29,8 @@ const userSchema = z.object({
   birthDate: z.string().optional(),
   role: z.enum(['admin', 'user']),
   position: z.string()
-    .max(255, 'Position should not exceed 255 characters')
+    .min(1, 'Position is required') // Минимальная длина строки
+    .max(255, 'Position should not exceed 255 characters') // Максимальная длина строки
     .optional()
     .transform(val => val === '' ? undefined : val),
   isActive: z.boolean(),
