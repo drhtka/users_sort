@@ -22,12 +22,6 @@ import {
 import { updateUser, createUser, fetchUsers, deleteUser } from '../api/userApi';
 import { User } from '../types/user';
 
-// Fetch users data
-const { data: users = [], isLoading, error } = useQuery({
-  queryKey: ['users'], 
-  queryFn: fetchUsers, 
-});
-
 // Define user schema for form validation
 const userSchema = z.object({
   fullName: z.string()
@@ -67,6 +61,12 @@ export const UserForm: React.FC<UserFormProps> = ({ user, onClose, isNew = false
   const queryClient = useQueryClient();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Перемещаем useQuery внутрь компонента
+  const { data: users = [], isLoading, error } = useQuery({
+    queryKey: ['users'], 
+    queryFn: fetchUsers, 
+  });
 
   const { control, handleSubmit } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
